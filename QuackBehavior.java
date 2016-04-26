@@ -1,0 +1,8 @@
+package behavior.strategyPattern;
+
+/**
+ * Ñ¼×Ó½ÐÉù½Ó¿Ú
+ */
+public interface QuackBehavior {
+    void quack();
+}
