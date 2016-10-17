@@ -1,0 +1,8 @@
+INDEX VERSION 1.122+G:\GitHub\learning-java\code\.metadata\.plugins\org.eclipse.wst.jsdt.core\indexes
+3948582279.index
+1881442065.index
+437459464.index
+3849962152.index
+3306752521.index
+954121164.index
+1841954676.index

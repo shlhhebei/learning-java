@@ -1,0 +1,29 @@
+package com.spring.util;
+
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
+/**
+ * 工具类，当程序中需要获取ApplicationContext对象时，可以直接调用该类的静态方法获得
+ * 
+ * 在web项目中，必须将此类注册到spring容器中，使ApplicationContext对象注入到该类的静态属性中
+ * @author win7
+ *
+ */
+public class ContextGetter implements ApplicationContextAware {
+	
+	private static ApplicationContext xxx;
+
+	@Override
+	public void setApplicationContext(ApplicationContext arg0)
+			throws BeansException {
+		// TODO Auto-generated method stub
+		xxx = arg0;	
+	}
+	
+	public static Object getBean(String beanId){
+		System.out.println(xxx);
+		return xxx.getBean(beanId);
+	}
+}
