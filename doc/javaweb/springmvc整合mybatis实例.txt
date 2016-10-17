@@ -9,6 +9,7 @@
       org.springframework.web.servlet-3.1.1.RELEASE.jar
 
 2、修改src/applicationContext.xml 如下：
+
       <?xml version="1.0" encoding="UTF-8" ?>
       <beans xmlns="http://www.springframework.org/schema/beans"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -53,12 +54,14 @@
       </beans>
 
 3、在src下添加db.properties:
+
       driver=com.mysql.jdbc.Driver
       url=jdbc:mysql://localhost:3306/dbname
       username=root
       password=root
 
 4、在com.gelogin.spring.entity包下添加实体类，实体类对应于数据表，其属性与数据表相同或多于数据表
+
       package com.gelogin.spring.entity;
 
       public class Menu{
@@ -73,6 +76,7 @@
 
 5、在com.gelogin.spring.mapper下添加实体类与数据表的映射关系（com.gelogin.spring.mapper与
    applicationContext.xml中的配置一致）
+
       package com.gelogin.spring.mapper;
 
       import java.util.List;
@@ -103,6 +107,7 @@
            该变量在@Select中调用（通过${sql}调用）。
 
 6、在com.gelogin.spring.service中添加MenuService接口
+
       package com.gelogin.spring.service;
 
       import java.util.List;
@@ -114,6 +119,7 @@
       }
 
 7、在com.gelogin.spring.service.impl中添加MenuServiceImpl作为MenuService接口的实现
+
       package com.gelogin.spring.service.impl;
 
       import java.util.List;
@@ -143,6 +149,7 @@
            即为前面定义的映射类。
 
 8、修改控制器LoginController
+
       package com.geloin.spring.controller;
 
       import java.util.HashMap;
@@ -184,6 +191,7 @@
         menu.jsp页面用于显示。
 
 9、编写/WEB-INF/pages/background/menu.jsp页面
+
       <%@ page language="java" contentType="text/html; charset=UTF-8"
           pageEncoding="UTF-8"%>
       <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>

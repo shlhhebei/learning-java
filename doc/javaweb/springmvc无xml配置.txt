@@ -1,0 +1,229 @@
+在一些基于spring/Spring MVC的Java Web项目中，总是会有一些xml配置文件，如web.xml、applicationContext.xml等，
+本文的目标即消灭这些xml配置文件，用代码和注解来代替。
+由于本文是基于Servlet 3，所以首先需要准备支持Servlet 3的容器，例如Tomcat 7.0及以上版本、Jetty 8及以上版本。
+
+  1、去除web.xml
+        下面是一个典型的web.xml，包含Spring/Spring MVC的配置：
+
+        <?xml version="1.0" encoding="UTF-8"?>
+        <web-app xmlns="http://java.sun.com/xml/ns/javaee"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+                version="3.0">
+
+            <context-param>
+                <param-name>contextConfigLocation</param-name>
+                <param-value>classpath:applicationContext.xml</param-value>
+            </context-param>
+            <servlet>
+                <servlet-name>dispatcher</servlet-name>
+                <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+                <init-param>
+                    <param-name>contextConfigLocation</param-name>
+                    <param-value>classpath:dispatcher-servlet.xml</param-value>
+                </init-param>
+                <load-on-startup>1</load-on-startup>
+            </servlet>
+            <servlet-mapping>
+                <servlet-name>dispatcher</servlet-name>
+                <url-pattern>/</url-pattern>
+            </servlet-mapping>
+            <listener>
+                <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+            </listener>
+        </web-app>
+
+        下一步是去除web.xml文件，用Java代码代替它，此时便可删除web.xml。。
+        Spring MVC提供了一个接口 WebApplicationInitializer，用于替代web.xml配置文件。实现该接口的类会在Servlet容器启动时自动加载并运行。
+
+        将以上xml文件转换成Java代码：
+
+        public class MyWebAppInitializer implements WebApplicationInitializer {
+            /**
+             * Servlet容器启动时会自动运行该方法
+             */
+            @Override
+            public void onStartup(ServletContext servletContext) throws ServletException {
+                servletContext.setInitParameter("contextConfigLocation", "classpath:applicationContext.xml");
+                ServletRegistration.Dynamic registration = servletContext.addServlet("dispatcher", new DispatcherServlet());
+                registration.setLoadOnStartup(1);
+                registration.addMapping("/");
+                registration.setInitParameter("contextConfigLocation", "classpath:dispatcher-servlet.xml");
+                servletContext.addListener(new ContextLoaderListener());
+            }
+        }
+
+
+    2、去除Spring MVC配置文件dispatcher-servlet.xml
+
+         一个典型的Spring MVC配置文件如下：
+         <?xml version="1.0" encoding="UTF-8"?>
+         <beans xmlns="http://www.springframework.org/schema/beans"
+            xmlns:context="http://www.springframework.org/schema/context"
+            xmlns:mvc="http://www.springframework.org/schema/mvc"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="
+            http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context.xsd
+            http://www.springframework.org/schema/mvc
+            http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+            <mvc:annotation-driven />
+            <context:component-scan base-package="com.xxg.controller" />
+
+            <bean id="jspViewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+                <property name="prefix" value="/WEB-INF/jsp/" />
+                <property name="suffix" value=".jsp" />
+            </bean>
+        </beans>
+
+        Spring提供了 @Configuration 注解用于替代 xml 配置文件，@Bean注解可以替代xml中的<bean>来创建bean。
+        将以上xml配置文件转换成Java代码：
+        @Configuration
+        @EnableWebMvc
+        @ComponentScan(basePackages = "com.xxg.controller")
+        public class WebConfig {
+
+            @Bean
+            public InternalResourceViewResolver internalResourceViewResolver() {
+                InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+                viewResolver.setPrefix("/WEB-INF/jsp/");
+                viewResolver.setSuffix(".jsp");
+                return viewResolver;
+            }
+        }
+
+3、去除Spring配置文件applicationContext.xml
+
+      Spring的配置文件中内容可能会比较多，并且不同的项目会有不同的配置，以下提供了一个简单的配置：
+        <?xml version="1.0" encoding="UTF-8"?>
+        <beans xmlns="http://www.springframework.org/schema/beans"
+            xmlns:context="http://www.springframework.org/schema/context"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://www.springframework.org/schema/beans
+                http://www.springframework.org/schema/beans/spring-beans.xsd
+                http://www.springframework.org/schema/context
+                http://www.springframework.org/schema/context/spring-context.xsd">
+
+            <context:component-scan base-package="com.xxg">
+                <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+            </context:component-scan>
+            <context:property-placeholder location="classpath:config.properties"/>
+
+            <bean id="myDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+                <property name="driverClassName" value="${jdbc.driverClassName}"/>
+                <property name="url" value="${jdbc.url}"/>
+                <property name="username" value="${jdbc.username}"/>
+                <property name="password" value="${jdbc.password}"/>
+            </bean>
+        </beans>
+        其中数据库的相关配置从config.properties配置文件读取：
+                jdbc.driverClassName=com.mysql.jdbc.Driver
+                jdbc.url=jdbc:mysql://localhost:3306/mydb
+                jdbc.username=root
+                jdbc.password=123456
+        将以上xml配置转换成Java代码：
+        @Configuration
+        @ComponentScan(basePackages = "com.xxg", excludeFilters = {@Filter(value = Controller.class)})
+        public class AppConfig {
+
+            @Value("${jdbc.driverClassName}")
+            private String driverClassName;
+
+            @Value("${jdbc.url}")
+            private String url;
+
+            @Value("${jdbc.username}")
+            private String username;
+
+            @Value("${jdbc.password}")
+            private String password;
+
+            @Bean(destroyMethod = "close")
+            public DataSource dataSource() {
+                BasicDataSource dataSource = new BasicDataSource();
+                dataSource.setDriverClassName(driverClassName);
+                dataSource.setUrl(url);
+                dataSource.setUsername(username);
+                dataSource.setPassword(password);
+                return dataSource;
+            }
+
+            /**
+             * 必须加上static
+             */
+            @Bean
+            public static PropertyPlaceholderConfigurer loadProperties() {
+                PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
+                ClassPathResource resource = new ClassPathResource("config.properties");
+                configurer.setLocations(resource);
+                return configurer;
+            }
+        }
+
+        除了上面的方法外，加载properties配置文件还可以使用@PropertySource注解，Java代码也可以这样写：
+        @Configuration
+        @ComponentScan(basePackages = "com.xxg", excludeFilters = {@Filter(value = Controller.class)})
+        @PropertySource("classpath:config.properties")
+        public class AppConfig {
+
+            @Value("${jdbc.driverClassName}")
+            private String driverClassName;
+
+            @Value("${jdbc.url}")
+            private String url;
+
+            @Value("${jdbc.username}")
+            private String username;
+
+            @Value("${jdbc.password}")
+            private String password;
+
+            @Bean(destroyMethod = "close")
+            public DataSource dataSource() {
+                BasicDataSource dataSource = new BasicDataSource();
+                dataSource.setDriverClassName(driverClassName);
+                dataSource.setUrl(url);
+                dataSource.setUsername(username);
+                dataSource.setPassword(password);
+                return dataSource;
+            }
+
+            /**
+             * 必须加上static
+             */
+            @Bean
+            public static PropertySourcesPlaceholderConfigurer loadProperties() {
+                PropertySourcesPlaceholderConfigurer configurer = new PropertySourcesPlaceholderConfigurer();
+                return configurer;
+            }
+        }
+
+4、修改MyWebAppInitializer.java
+
+        完成以上步骤后，就可以去掉dispatcher-servlet.xml和applicationContext.xml等Spring配置文件，用Java代码替代了。
+        此时，第1步中的MyWebAppInitializer.java需要修改，不再读取xml配置文件，而是加载@Configuration注解的Java代码来配置Spring：
+
+        public class MyWebAppInitializer implements WebApplicationInitializer {
+
+            /**
+             * Servlet容器启动时会自动运行该方法
+             */
+            @Override
+            public void onStartup(ServletContext servletContext) throws ServletException {
+
+                AnnotationConfigWebApplicationContext rootContext = new AnnotationConfigWebApplicationContext();
+                rootContext.register(AppConfig.class);
+                servletContext.addListener(new ContextLoaderListener(rootContext));
+
+                AnnotationConfigWebApplicationContext webContext = new AnnotationConfigWebApplicationContext();
+                webContext.register(WebConfig.class);
+                ServletRegistration.Dynamic registration = servletContext.addServlet("dispatcher", new DispatcherServlet(webContext));
+                registration.setLoadOnStartup(1);
+                registration.addMapping("/");
+            }
+        }
+
+        OK，完成！      
