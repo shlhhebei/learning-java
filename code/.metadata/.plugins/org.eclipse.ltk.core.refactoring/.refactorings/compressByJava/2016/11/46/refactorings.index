@@ -2,3 +2,4 @@
 1478764311963	Extract method 'zipFile'
 1478764915725	Extract method 'zipDirectory'
 1478767175758	Extract method 'zip'
+1478770840628	Extract method 'unZip'

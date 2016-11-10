@@ -1,0 +1,10 @@
+package cn.shlh.compress.simpleModel;
+
+public class UnZipFile {
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+
+	}
+
+}
