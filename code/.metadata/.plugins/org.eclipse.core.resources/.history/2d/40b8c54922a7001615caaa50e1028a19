@@ -1,0 +1,117 @@
+package cn.shlh.compress.simpleModel;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+/**
+ * java 实现文件压缩功能 简单示例
+ * @author Administrator
+ *
+ */
+public class ZipCompress {
+
+	public static void main(String[] args) {
+		String sourcePath = "F:\\王超翔";
+		String outPath = "F:\\test/王超翔.zip";
+		
+		zip(sourcePath, outPath);
+
+	}
+
+	/**
+	 * 压缩文件或文件夹
+	 * @param sourcePath 原文件/夹 路径（将要压缩的文件）
+	 * @param outPath 输入文件路径
+	 */
+	public static void zip(String sourcePath, String outPath) {
+		try {
+			File sourceFile = new File(sourcePath);
+			//文件输出流
+			FileOutputStream fos = new FileOutputStream(new File(outPath));
+			//zip格式的输出流
+			ZipOutputStream zos = new ZipOutputStream(fos);
+			//压缩条目
+			String zipEntryName = sourceFile.getName();
+			
+			//判断传入的是文件还是文件夹，执行相应的方法来压缩
+			if (sourceFile.isFile()) {
+				//压缩文件
+				zipFile(sourceFile, zos, zipEntryName);
+			}else{
+				//压缩文件夹
+				zipDirectory(sourceFile, zos, zipEntryName);				
+			}
+			
+			zos.close();
+			fos.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 递归压缩文件夹
+	 * @param sourceFile 将要被压缩的文件夹
+	 * @param zos zip格式输出流
+	 * @param zipEntryName 压缩条目
+	 * @throws IOException
+	 * @throws FileNotFoundException
+	 */
+	private static void zipDirectory(File sourceFile, ZipOutputStream zos,
+			String zipEntryName) throws IOException, FileNotFoundException {
+		//压缩目录，遍历目录里面的所有文件
+		for(File innerFile:sourceFile.listFiles()){
+			if(innerFile.isFile()){
+				//如果是文件则直接调用压缩文件的方法进行压缩
+				zipFile(innerFile,zos,zipEntryName+"/"+innerFile.getName());
+			}else{
+				//说明现在的sourceFile是目录，则需要将该目录的所有文件压缩
+				if(innerFile.listFiles().length > 0){					
+					//递归调用压缩文件夹的方法，压缩文件夹内所有内容
+					zipDirectory(innerFile, zos, zipEntryName + "/" +innerFile.getName());
+				}else{
+					//空文件夹
+					//将压缩条目写入到压缩对象中，如果不写入压缩条目，则原文件夹内的空的子文件夹会丢失
+					//最后的斜杠“/”要带上，不带会出现
+					zos.putNextEntry(new ZipEntry(zipEntryName + "/" + innerFile.getName() + "/"));
+					zos.closeEntry();
+				}
+			}
+		}
+	}
+
+	/**
+	 * 压缩文件
+	 * @param sourceFile 将要被压缩的文件
+	 * @param zos  zip格式输出流
+	 * @param zipEntryName 压缩条目
+	 * @throws IOException
+	 * @throws FileNotFoundException
+	 */
+	private static void zipFile(File sourceFile, ZipOutputStream zos,
+			String zipEntryName) throws IOException, FileNotFoundException {
+		//设置压缩条目，将一个将要压缩的文件写入到压缩条目中
+		zos.putNextEntry(new ZipEntry(zipEntryName));
+		zos.setLevel(9);
+		zos.setComment("forTest");
+		//读入将要压缩的文件
+		FileInputStream fis = new FileInputStream(sourceFile);
+		//设置缓存
+		byte[] b = new byte[1024];
+		int length;
+		//将原文件写入zip格式输出流
+		while((length = fis.read(b)) > 0){
+			zos.write(b,0,length);
+		}
+		fis.close();
+		//关闭条目
+		zos.closeEntry();
+	}
+
+}
