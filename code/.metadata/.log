@@ -1481,3 +1481,23 @@ user global configuration and to define the default location to store repositori
 not correct please set the HOME environment variable and restart Eclipse. Otherwise Git for Windows and
 EGit might behave differently since they see different configuration options.
 This warning can be switched off on the Team > Git > Confirmations and Warnings preference page.
+
+!ENTRY org.eclipse.egit.core 4 0 2016-11-10 17:45:54.685
+!MESSAGE An exception occurred during push on URI git@git.oschina.net:shlh/learning-java.git: git@git.oschina.net:shlh/learning-java.git: connection failed
+!STACK 0
+org.eclipse.jgit.api.errors.TransportException: git@git.oschina.net:shlh/learning-java.git: connection failed
+	at org.eclipse.jgit.api.PushCommand.call(PushCommand.java:160)
+	at org.eclipse.egit.core.op.PushOperation.run(PushOperation.java:228)
+	at org.eclipse.egit.ui.internal.push.PushOperationUI.execute(PushOperationUI.java:167)
+	at org.eclipse.egit.ui.internal.push.PushOperationUI$1.run(PushOperationUI.java:229)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:54)
+Caused by: org.eclipse.jgit.errors.TransportException: git@git.oschina.net:shlh/learning-java.git: connection failed
+	at org.eclipse.jgit.transport.JschSession$JschProcess.<init>(JschSession.java:152)
+	at org.eclipse.jgit.transport.JschSession$JschProcess.<init>(JschSession.java:118)
+	at org.eclipse.jgit.transport.JschSession.exec(JschSession.java:91)
+	at org.eclipse.jgit.transport.TransportGitSsh$SshPushConnection.<init>(TransportGitSsh.java:306)
+	at org.eclipse.jgit.transport.TransportGitSsh.openPush(TransportGitSsh.java:152)
+	at org.eclipse.jgit.transport.PushProcess.execute(PushProcess.java:154)
+	at org.eclipse.jgit.transport.Transport.push(Transport.java:1173)
+	at org.eclipse.jgit.api.PushCommand.call(PushCommand.java:156)
+	... 4 more

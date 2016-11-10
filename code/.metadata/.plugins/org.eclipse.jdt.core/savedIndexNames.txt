@@ -32,7 +32,6 @@ INDEX VERSION 1.127+E:\shlh\git\learning-java\code\.metadata\.plugins\org.eclips
 2504299887.index
 2791337766.index
 1731247781.index
-1841954676.index
 3987360665.index
 2913652486.index
 540517989.index
