@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 /**
@@ -15,8 +17,8 @@ import java.util.zip.ZipOutputStream;
 public class ZipCompress {
 
 	public static void main(String[] args) {
-		String sourcePath = "F:\\王超翔";
-		String outPath = "F:\\test/王超翔.zip";
+		String sourcePath = "E:/shlh/download/qq_message/373942627/FileRecv/概要设计说明书-图纸管理模块.docx";
+		String outPath = "F:\\test/概要设计说明书-图纸管理模块.zip";
 		
 		zip(sourcePath, outPath);
 
@@ -32,8 +34,10 @@ public class ZipCompress {
 			File sourceFile = new File(sourcePath);
 			//文件输出流
 			FileOutputStream fos = new FileOutputStream(new File(outPath));
+			//需要维护写入数据校验和的输出流。校验和可用于验证输出数据的完整性。
+			CheckedOutputStream cos = new CheckedOutputStream(fos, new CRC32());
 			//zip格式的输出流
-			ZipOutputStream zos = new ZipOutputStream(fos);
+			ZipOutputStream zos = new ZipOutputStream(cos);
 			//压缩条目
 			String zipEntryName = sourceFile.getName();
 			
@@ -47,6 +51,8 @@ public class ZipCompress {
 			}
 			
 			zos.close();
+			System.out.println("检验和：" + cos.getChecksum().getValue());
+			cos.close();
 			fos.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -98,8 +104,8 @@ public class ZipCompress {
 			String zipEntryName) throws IOException, FileNotFoundException {
 		//设置压缩条目，将一个将要压缩的文件写入到压缩条目中
 		zos.putNextEntry(new ZipEntry(zipEntryName));
-		zos.setLevel(9);
-		zos.setComment("forTest");
+		//zos.setLevel(9);
+		//zos.setComment("forTest");
 		//读入将要压缩的文件
 		FileInputStream fis = new FileInputStream(sourceFile);
 		//设置缓存
